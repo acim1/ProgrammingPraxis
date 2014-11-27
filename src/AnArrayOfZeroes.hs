@@ -2,8 +2,8 @@ module AnArrrayOfZeroes where
 
 import Control.Monad
 import Control.Monad.ST
+import Data.Array
 import Data.Array.ST
-import Data.Array.IArray
 import Data.STRef
 
 aoz :: [Int] -> Array Int Int
