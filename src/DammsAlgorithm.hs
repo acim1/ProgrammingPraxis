@@ -33,4 +33,4 @@ toDigits :: Int -> [Int]
 toDigits = map digitToInt . show
 
 fromDigits :: [Int] -> Int
-fromDigits = read . map (intToDigit) 
+fromDigits = read . map intToDigit
