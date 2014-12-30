@@ -26,13 +26,13 @@ magicSquares :: Order -> Start -> Rule -> Arr
 magicSquares n start rule = runSTUArray $ do
     a <- newArray ((1,1),(n,n)) 0 :: ST s (STArr s)
     let cell = findStart n start
-    ms a n cell rule
+    foldM_ (applyRule a rule) cell [1..n]
+    return a
 
--- possibly uneccessary function? do a map of rules over array and be done with it?    
-ms :: STArr s -> Order -> Cell -> Rule -> ST s (STArr s)
-ms a n c r = go 1
+applyRule :: STArr s -> Rule -> Cell -> Int -> ST s Cell
+applyRule a r c i = go r
   where 
-    go i
-      | i > n     = return a
-      | otherwise = return a  
-
+    go (r:[]) = apply r
+    go (r:rs) = if check r then apply r else go rs
+    check r   = undefined
+    apply r   = undefined
