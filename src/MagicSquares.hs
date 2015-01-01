@@ -20,19 +20,37 @@ findStart n pos = case pos of
                 Lft -> (center, 1)
                 Rht -> (center, n)
   where 
-    center = n `quot` 2
+    center = (n `quot` 2) + 1
 
 magicSquares :: Order -> Start -> Rule -> Arr
 magicSquares n start rule = runSTUArray $ do
     a <- newArray ((1,1),(n,n)) 0 :: ST s (STArr s)
-    let cell = findStart n start
-    foldM_ (applyRule a rule) cell [1..n]
+    let i = findStart n start
+    writeArray a i 1
+    foldM_ (applyRule a n rule) i [2..(n*n)]
     return a
 
-applyRule :: STArr s -> Rule -> Cell -> Int -> ST s Cell
-applyRule a r c i = go r
+applyRule :: STArr s -> Order -> Rule -> Cell -> Int -> ST s Cell
+applyRule a n r c x = go r
   where 
-    go (r:[]) = apply r
-    go (r:rs) = if check r then apply r else go rs
-    check r   = undefined
-    apply r   = undefined
+    go (m:[]) = write (seek n m c)
+    go (m:ms) = do 
+        let i = seek n m c
+        e <- readArray a i
+        if e == 0 then write i else go ms
+    write i = writeArray a i x >> return i
+
+seek :: Order -> [Move] -> Cell -> Cell
+seek n ms c = foldl go c ms
+  where
+    go (i,j) m = case m of
+        U -> wrap (i-1,j)
+        D -> wrap (i+1,j)
+        L -> wrap (i,j-1)
+        R -> wrap (i,j+1)
+    wrap (i,j) = (f i, f j)
+    f k 
+     | k == 0     = n
+     | k == (n+1) = 1
+     | otherwise  = k 
+
