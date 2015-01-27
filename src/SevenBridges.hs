@@ -1,8 +1,38 @@
 module SevenBridges where
 
+import Control.Monad
 import Data.Graph.Inductive
 
 sevenBridges :: UGr
 sevenBridges = undir (g :: UGr)
   where
-    g = mkUGraph [1..14] [(1,2),(1,3),(1,5),(2,12),(2,13),(3,4),(3,5),(4,6),(4,8),(4,10),(4,14),(5,6),(6,8),(6,10),(6,14),(7,8),(7,9),(7,11),(8,10),(8,14),(9,10),(9,11),(11,12),(10,14),(12,13),(13,14)]
+    g = mkUGraph [1..3] [(1,2),(1,3),(2,3)] 
+
+eulerGraph :: DynGraph gr => gr a b -> Maybe [Node]
+eulerGraph g = run g [] [] $ circuitPathNode g `mplus` completePathNode g
+  where
+    run g stack path vertex = do
+        v  <- vertex
+        let ns = neighbors g v
+        case (stack,ns) of
+            ([],[])   -> return (v:path)
+            (_,n:ns)  -> do
+                let g' = delEdges [(v,n),(n,v)] g
+                run g' (v:stack) path (return n)
+            (x:xs,_) -> do
+                run g xs (v:path) (return x)
+
+circuitPathNode :: Graph gr => gr a b -> Maybe Node    
+circuitPathNode g = if p then Just (node' . fst . matchAny $ g) else Nothing 
+  where
+    p = ufold (\c u -> u && (even . deg') c) True g
+
+completePathNode :: Graph gr => gr a b -> Maybe Node
+completePathNode g = toMaybe odds   
+  where
+    odds   = ufold f [] g
+    f c ns = let n  = node' c
+                 d  = deg'  c
+             in if odd d then n : ns else ns
+    toMaybe (x:y:[]) = Just x
+    toMaybe _        = Nothing             
