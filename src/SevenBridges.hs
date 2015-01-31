@@ -3,10 +3,10 @@ module SevenBridges where
 import Control.Monad
 import Data.Graph.Inductive
 
-sevenBridges :: UGr
-sevenBridges = undir (g :: UGr)
+sevenBridges :: Gr Char ()
+sevenBridges = g
   where
-    g = mkUGraph [1..3] [(1,2),(1,3),(2,3)] 
+    g = mkGraph (zip [1..4] ['a'..'d']) [(1,2,()),(1,2,()),(1,3,()),(2,1,()),(2,1,()),(2,3,()),(2,4,()),(2,4,()),(3,1,()),(3,2,()),(3,4,()),(4,2,()),(4,2,()),(4,3,())] 
 
 eulerGraph :: DynGraph gr => gr a b -> Maybe [Node]
 eulerGraph g = run g [] [] $ circuitPathNode g `mplus` completePathNode g
