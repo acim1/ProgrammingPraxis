@@ -19,7 +19,7 @@ eulerGraph g = run g [] [] $ circuitPathNode g `mplus` completePathNode g
   where
     run g stack path vertex = do
         v  <- vertex
-        let ns = neighbors g v
+        let ns = suc g v
         case (stack,ns) of
             ([],[])   -> return (v:path)
             (_,n:ns)  -> do
