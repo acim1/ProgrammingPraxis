@@ -1,8 +1,10 @@
 module WordChaining where
 
+import Control.Applicative ((<$>))
 import Data.Graph.Inductive
 import Data.List
 import qualified Data.Map as M
+import Data.Maybe
 import Tools.Graph
 
 words' :: [String]
@@ -32,10 +34,22 @@ mkWordGraph wrds = mkGraph (zip [1..] wrds) $ map (\xy@(x,y) -> (lblMap M.! x, l
       fm = firstMap wrds
       lm = lastMap  wrds
 
-chain :: [String] -> Maybe [Node]
+chain :: [String] -> Maybe [String]
 chain wrds = let g = mkWordGraph wrds
-             in if connected g then eulerGraph g else Nothing 
-             -- eulerGraph fails: in place, do modified dfs where backtracking fails, and iterate through starting nodes
+             in (listToMaybe . catMaybes) $ map (dfs' g) (nodes g) 
+  where
+    dfs' g n = case match n g of
+                 (Just c,g') ->
+                    let label = lab' c
+                        ns    = suc' c
+                        none  = isEmpty g'
+                    in 
+                        case (null ns, none) of
+                            (True, True)  -> Just [label]
+                            (True, False) -> Nothing
+                            _             -> 
+                               fmap (label :) $ (listToMaybe . catMaybes) $ map (dfs' g') ns 
+                 _           -> Nothing
 
 
 findAndRemove f [] = Nothing
