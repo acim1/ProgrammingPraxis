@@ -5,6 +5,7 @@ import Data.Char
 import Data.List
 import Data.Maybe
 
+type RegexString = String
 type Regex = [Exp]
 
 data Exp = Beg | End | Esc Char | Lit Char | Any | CharClass ChrClass| ZeroOrMore deriving Show 
@@ -58,3 +59,34 @@ rng (i,j)
  | (isUpper i) && (isUpper j) = Just $ Rng (i,j)
  | (isLower i) && (isLower j) = Just $ Rng (i,j)
  | otherwise                  = Nothing
+
+
+match :: RegexString -> String -> Bool
+match regexStr str = case parse regexStr of
+                (Just regex) -> regexMatch regex str
+                _            -> error "Invalid regular expression."
+
+regexMatch :: Regex -> String -> Bool
+regexMatch (Beg:exps) xs = rMatch exps xs
+regexMatch exps xs = or $ map (rMatch exps) (tails xs)
+
+rMatch :: Regex -> String -> Bool
+rMatch (End:[]) [] = True
+rMatch (End:[]) _  = False
+rMatch [] _        = True
+rMatch regex@(exp : ZeroOrMore : exps) str = 
+    let newStr = eat exp str 
+    in if eaten str newStr then rMatch regex newStr else rMatch exps str
+rMatch (exp : exps) str = 
+    let newStr = eat exp str 
+    in if eaten str newStr then rMatch exps newStr else False                                                  
+    
+eaten :: String -> String -> Bool    
+eaten oldStr newStr = (length oldStr) > (length newStr)
+
+eat :: Exp -> String -> String
+eat = undefined                                               
+                                                             
+                
+                                    
+
